@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FixFlow prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6f5;--card:#fff;--ink:#0f2a26;--mute:#5c726d;--line:#d9e3e0;--brand:#0b6b5c;--brandink:#fff;
+--s-new:#2f6fdb;--s-work:#d99a00;--s-part:#8a4fd6;--s-ready:#1a9b52;--s-ask:#d9622b;--s-off:#8a9794;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1917;--card:#142623;--ink:#e6f2ef;--mute:#9bb3ad;--line:#27403b;--brand:#3fc5ac;--brandink:#06201b}}
+:root[data-theme="dark"]{--bg:#0c1917;--card:#142623;--ink:#e6f2ef;--mute:#9bb3ad;--line:#27403b;--brand:#3fc5ac;--brandink:#06201b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--card:#142623}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Hind,system-ui,sans-serif}
+h1,h2,h3,.brand{font-family:'Bricolage Grotesque',Hind,sans-serif;margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+.brand{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.brand i{font-style:normal;color:var(--brand)}
+.tabs{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 16px;border-radius:999px;font-weight:600;color:var(--mute)}
+.tabs button[aria-selected=true]{background:var(--brand);color:var(--brandink)}
+main{max-width:980px;margin:0 auto;padding:20px}
+.note{font-size:14px;color:var(--mute);margin:0 0 16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left}
+.stat[aria-pressed=true]{border-color:var(--brand)}
+.stat b{display:block;font:800 30px 'Bricolage Grotesque',sans-serif}
+.stat span{font-size:14px;color:var(--mute)}
+.bar{display:flex;gap:10px;margin-bottom:12px}
+.bar input{flex:1;min-width:0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.btn{background:var(--brand);color:var(--brandink);border:0;border-radius:10px;padding:10px 16px;font-weight:600;white-space:nowrap;text-decoration:none;display:inline-block}
+.btn.alt{background:none;color:var(--ink);border:1px solid var(--line)}
+.list{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:64px 1.1fr 1.3fr 1.3fr 80px;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 16px}
+.row:last-child{border:0}.row:hover{background:var(--bg)}
+.row small{color:var(--mute)}
+.pill{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--c)}
+.empty{padding:28px;text-align:center;color:var(--mute)}
+.overlay{position:fixed;inset:0;background:rgba(5,20,17,.55);display:none;align-items:flex-end;justify-content:center;z-index:5}
+.overlay.open{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:18px 18px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+@media(min-width:700px){.overlay{align-items:center}.sheet{border-radius:18px}}
+.sheet h2{font-size:22px;margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{border:2px solid var(--line);background:none;border-radius:999px;padding:7px 13px;font-weight:600;font-size:14px}
+.chip[aria-pressed=true]{border-color:var(--c);background:var(--c);color:#fff}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+.sheet input,.sheet select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.phonewrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.phone{width:100%;max-width:390px;border:10px solid #1b2b28;border-radius:36px;background:var(--card);overflow:hidden}
+.url{background:var(--bg);font-size:13px;color:var(--mute);padding:8px 14px;text-align:center;border-bottom:1px solid var(--line)}
+.cust{padding:20px 20px 26px}
+.cust .shop{font-size:14px;color:var(--mute)}
+.cust h1{font-size:30px;font-weight:800;margin:6px 0 2px}
+.big{display:flex;align-items:center;gap:10px;font:800 21px 'Bricolage Grotesque',sans-serif;padding:14px;border-radius:14px;background:var(--bg);margin:14px 0}
+.big .dot{width:16px;height:16px}
+.callout{border-left:5px solid var(--c);background:var(--bg);padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:15px}
+dl{margin:0 0 16px}dt{font-size:13px;color:var(--mute)}dd{margin:0 0 10px;font-weight:600}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:flex;gap:12px;align-items:center;padding:7px 0;position:relative;color:var(--mute)}
+.steps li:before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none;background:var(--card)}
+.steps li.done{color:var(--ink)}.steps li.done:before{background:var(--brand);border-color:var(--brand)}
+.steps li.now{color:var(--ink);font-weight:700}.steps li.now:before{border-color:var(--c);background:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 25%,transparent)}
+.upd{font-size:13px;color:var(--mute);margin-top:14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+.toast.on{opacity:1}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr auto;gap:2px}.row .h{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Fix<i>Flow</i></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-shop" aria-selected="true">Shop view</button>
+    <button role="tab" id="t-cust" aria-selected="false">Customer view</button>
+  </div>
+</header>
+<main>
+  <section id="shop">
+    <p class="note">Prototype with sample data. Tap a repair, change its status, then check the Customer view.</p>
+    <div class="stats" id="stats"></div>
+    <div class="bar"><input id="q" type="search" placeholder="Search name, device or ticket" aria-label="Search repairs"><button class="btn" id="new">+ New repair</button></div>
+    <div class="list" id="list"></div>
+  </section>
+  <section id="custv" hidden>
+    <div class="phonewrap"><p class="note" id="custnote"></p><div class="phone" id="phone"></div></div>
+  </section>
+</main>
+
+<div class="overlay" id="ov-detail"><div class="sheet" id="detail"></div></div>
+<div class="overlay" id="ov-new"><div class="sheet">
+  <h2>New repair</h2>
+  <label for="f-name">Customer name</label><input id="f-name">
+  <label for="f-phone">Phone number</label><input id="f-phone" inputmode="numeric" placeholder="10 digits">
+  <div class="two"><div><label for="f-type">Item</label><select id="f-type"><option>Phone</option><option>Laptop</option><option>Bike / Scooter</option><option>AC / Fridge</option><option>Watch</option><option>Other</option></select></div>
+  <div><label for="f-device">Brand and model</label><input id="f-device" placeholder="Redmi Note 13"></div></div>
+  <label for="f-prob">Problem</label><input id="f-prob" placeholder="Broken display">
+  <div class="two"><div><label for="f-cost">Estimated cost (₹)</label><input id="f-cost" inputmode="numeric"></div>
+  <div><label for="f-due">Expected completion</label><input id="f-due" type="date"></div></div>
+  <div class="actions"><button class="btn" id="create">Create repair</button><button class="btn alt" data-close>Cancel</button></div>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const SHOP={name:"Sharma Mobile & Repair",phone:"98765 43210"};
+const ST={
+ received:{l:"Received",c:"var(--s-new)",d:"We have your item."},
+ diagnosing:{l:"Diagnosing",c:"var(--s-work)",d:"Our technician is checking the problem."},
+ approval:{l:"Waiting for your approval",c:"var(--s-ask)",d:"We found the issue. Please call or message us to approve the cost."},
+ part:{l:"Waiting for part",c:"var(--s-part)",d:"The repair is paused until the part arrives."},
+ repairing:{l:"Repairing",c:"var(--s-work)",d:"Our technician is working on it now."},
+ ready:{l:"Ready for pickup",c:"var(--s-ready)",d:"Your item is ready. Come and collect it."},
+ completed:{l:"Completed",c:"var(--s-ready)",d:"Collected. Thank you!"},
+ cancelled:{l:"Cancelled",c:"var(--s-off)",d:"This repair was cancelled."}};
+const STEPS=[["received","Received"],["diagnosing","Diagnosing"],["repairing","Repairing"],["ready","Ready for pickup"],["completed","Completed"]];
+const POS={received:0,diagnosing:1,approval:1,part:1,repairing:2,ready:3,completed:4,cancelled:-1};
+const now=()=>new Date().toLocaleString("en-IN",{day:"numeric",month:"long",hour:"numeric",minute:"2-digit"});
+let R=[
+ {id:1048,token:"k7Qx9aM2",name:"Aman",phone:"9876500001",device:"Redmi Note 13",prob:"Screen damaged",cost:2500,due:"8 Oct",status:"repairing",updated:"5 October, 4:32 pm"},
+ {id:1049,token:"p3Zt5eW8",name:"Ravi",phone:"9876500002",device:"HP Laptop",prob:"Won't start",cost:3200,due:"9 Oct",status:"part",part:"SSD",eta:"7 Oct",updated:"5 October, 11:10 am"},
+ {id:1050,token:"v8Lm1cR4",name:"Simran",phone:"9876500003",device:"iPhone 13",prob:"Battery replacement",cost:4500,due:"Today",status:"ready",updated:"5 October, 2:05 pm"},
+ {id:1051,token:"d2Hn6yB7",name:"Gurpreet",phone:"9876500004",device:"Splendor bike",prob:"Clutch plate",cost:1800,due:"10 Oct",status:"received",updated:"5 October, 9:40 am"},
+ {id:1052,token:"x5Jq0sF3",name:"Harjeet",phone:"9876500005",device:"LG fridge",prob:"Not cooling",cost:6500,due:"12 Oct",status:"approval",updated:"4 October, 6:15 pm"}];
+let filter="all",sel=R[0].id,nextId=1053;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const grp={ready:["ready"],work:["diagnosing","repairing","approval"],part:["part"],new:["received"]};
+const get=id=>R.find(r=>r.id===id);
+const link=r=>"fixflow.in/r/"+r.token;
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)}
+function pill(s){return `<span class="pill" style="--c:${ST[s].c}"><span class="dot"></span>${ST[s].l}</span>`}
+
+function renderStats(){
+ const defs=[["ready","Ready","var(--s-ready)"],["work","In progress","var(--s-work)"],["part","Waiting for parts","var(--s-part)"],["new","New","var(--s-new)"]];
+ $("stats").innerHTML=defs.map(([k,l,c])=>{const n=R.filter(r=>grp[k].includes(r.status)).length;
+  return `<button class="stat" data-f="${k}" aria-pressed="${filter===k}" style="border-left:6px solid ${c}"><b>${n}</b><span>${l}</span></button>`}).join("");
+}
+function renderList(){
+ const q=$("q").value.toLowerCase();
+ const rows=R.filter(r=>(filter==="all"||grp[filter].includes(r.status))&&(`${r.id} ${r.name} ${r.device}`.toLowerCase().includes(q)));
+ $("list").innerHTML=rows.length?rows.map(r=>`<button class="row" data-id="${r.id}"><b>#${r.id}</b><span>${esc(r.name)}<br><small class="h">${esc(r.phone)}</small></span><span>${esc(r.device)}<br><small>${esc(r.prob)}</small></span>${pill(r.status)}<span class="h">${esc(r.due)}</span></button>`).join(""):`<div class="empty">No repairs match. Clear the filter or tap “+ New repair”.</div>`;
+ $("list").insertAdjacentHTML("afterbegin",filter!=="all"?`<div class="empty" style="padding:8px"><button class="btn alt" data-f="all">Show all repairs</button></div>`:"");
+}
+function renderDetail(){
+ const r=get(sel);if(!r)return;
+ const msg=`Hi ${r.name},\n\nYour repair #${r.id} can be tracked here:\nhttps://${link(r)}\n\nCurrent status: ${ST[r.status].l}\n\n— ${SHOP.name}`;
+ $("detail").innerHTML=`<h2>Repair #${r.id}: ${esc(r.device)}</h2>
+ <div class="note">${esc(r.name)} · ${esc(r.phone)}<br>${esc(r.prob)} · ₹${esc(r.cost)} · expected ${esc(r.due)}</div>
+ <b>Change status</b>
+ <div class="chips">${Object.keys(ST).map(k=>`<button class="chip" data-st="${k}" aria-pressed="${r.status===k}" style="--c:${ST[k].c}">${ST[k].l}</button>`).join("")}</div>
+ ${r.status==="part"?`<label for="partn">Part needed</label><input id="partn" value="${esc(r.part||"")}"><label for="parte">Expected arrival</label><input id="parte" value="${esc(r.eta||"")}" placeholder="7 Oct">`:""}
+ <div class="actions">
+  <a class="btn" target="_blank" rel="noopener" href="https://wa.me/91${esc(r.phone)}?text=${encodeURIComponent(msg)}">Share on WhatsApp</a>
+  <button class="btn alt" id="copy">Copy tracking link</button>
+  <button class="btn alt" id="prev">See customer view</button>
+  <button class="btn alt" data-close>Close</button></div>`;
+}
+function renderCust(){
+ const r=get(sel),s=ST[r.status],p=POS[r.status];
+ $("custnote").textContent="This is what the customer sees. No app, no login, no password.";
+ const steps=STEPS.map(([k,l],i)=>`<li class="${p>i?"done":""}${p===i?" now":""}">${l}</li>`).join("");
+ const call=r.status==="part"?`<div class="callout" style="--c:var(--s-part)"><b>Waiting for: ${esc(r.part||"part")}</b><br>Expected arrival: ${esc(r.eta||"to be confirmed")}</div>`:`<div class="callout" style="--c:${s.c}">${s.d}</div>`;
+ $("phone").innerHTML=`<div class="url">${link(r)}</div><div class="cust" style="--c:${s.c}">
+  <div class="shop">${esc(SHOP.name)}</div><h1>Repair #${r.id}</h1><div>${esc(r.device)}</div>
+  <div class="big"><span class="dot" style="background:${s.c}"></span>${s.l}</div>${call}
+  <dl><dt>Problem</dt><dd>${esc(r.prob)}</dd><dt>Estimated cost</dt><dd>₹${esc(r.cost)}</dd><dt>Expected completion</dt><dd>${esc(r.due)}</dd></dl>
+  ${p>=0?`<ul class="steps" style="--c:${s.c}">${steps}</ul>`:""}
+  <div class="upd">Last updated: ${esc(r.updated)}<br>Questions? Call ${SHOP.phone}</div></div>`;
+}
+function show(v){
+ const shop=v==="shop";$("shop").hidden=!shop;$("custv").hidden=shop;
+ $("t-shop").setAttribute("aria-selected",shop);$("t-cust").setAttribute("aria-selected",!shop);
+ if(!shop)renderCust();
+}
+function openO(id){$(id).classList.add("open")}
+function closeO(){document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("open"))}
+function all(){renderStats();renderList()}
+
+document.addEventListener("click",e=>{
+ const t=e.target.closest("button,.overlay");if(!t)return;
+ if(t.dataset.f){filter=filter===t.dataset.f&&t.dataset.f!=="all"?"all":t.dataset.f;all();return}
+ if(t.classList.contains("row")){sel=+t.dataset.id;renderDetail();openO("ov-detail");return}
+ if(t.dataset.st){const r=get(sel);r.status=t.dataset.st;r.updated=now();renderDetail();all();toast("Status updated: "+ST[r.status].l);return}
+ if(t.id==="copy"){const r=get(sel);try{navigator.clipboard.writeText("https://"+link(r)).then(()=>toast("Link copied"),()=>toast("Link: "+link(r)))}catch(_){toast("Link: "+link(r))}return}
+ if(t.id==="prev"){closeO();show("cust");return}
+ if(t.id==="new"){openO("ov-new");return}
+ if(t.hasAttribute("data-close")||t.classList.contains("overlay")&&e.target===t){closeO();return}
+});
+document.addEventListener("input",e=>{
+ if(e.target.id==="partn"||e.target.id==="parte"){const r=get(sel);r.part=$("partn").value;r.eta=$("parte").value;r.updated=now()}
+});
+$("q").addEventListener("input",renderList);
+$("t-shop").onclick=()=>show("shop");$("t-cust").onclick=()=>show("cust");
+$("create").onclick=()=>{
+ const name=$("f-name").value.trim(),dev=$("f-device").value.trim();
+ if(!name||!dev){toast("Add the customer name and the device");return}
+ const d=$("f-due").value;
+ const due=d?new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short"}):"To be confirmed";
+ const r={id:nextId++,token:Math.random().toString(36).slice(2,10),name,phone:$("f-phone").value.trim()||"0000000000",device:dev,prob:$("f-prob").value.trim()||$("f-type").value+" repair",cost:$("f-cost").value||"0",due,status:"received",updated:now()};
+ R.unshift(r);sel=r.id;closeO();["f-name","f-phone","f-device","f-prob","f-cost","f-due"].forEach(i=>$(i).value="");
+ all();renderDetail();openO("ov-detail");toast("Repair #"+r.id+" created");
+};
+all();
+</script>
+</body>
+</html>
