@@ -140,8 +140,10 @@ function detail(){
  $("detail").innerHTML=`<h2>${esc(i.name)}</h2><div class="note">${esc(i.phone)}</div>
  ${i.done?`<p class="sec">Completed ${fmt(i.done)}</p>`:`<div class="sec">When will the photos be ready?</div><div class="chips">${chips}</div>
  ${other?`<label for="ot">Pick a time</label><input id="ot" type="time"><p class="hint">If the time has already passed today, it is set for tomorrow.</p>`:""}`}
+ <label for="custom-msg">WhatsApp message</label><textarea id="custom-msg" rows="7" placeholder="Write a custom message...">${esc(i.customMessage ?? msg(i))}</textarea>
+ <p class="hint">Your message is saved automatically for this customer.</p>
  <div class="actions">
- <a class="btn wa full ${ok?"":"off"}" id="share" target="_blank" rel="noopener" ${ok?`href="https://wa.me/91${esc(i.phone)}?text=${encodeURIComponent(msg(i))}"`:""}>Share on WhatsApp</a>
+ <a class="btn wa full ${ok?"":"off"}" id="share" target="_blank" rel="noopener" ${ok?`href="https://wa.me/91${esc(i.phone)}?text=${encodeURIComponent(i.customMessage ?? msg(i))}"`:""}>Share on WhatsApp</a>
  ${!ok?`<p class="hint full" style="flex-basis:100%">Choose a time first, then share.</p>`:""}
  ${i.sent?`<p class="hint full" style="flex-basis:100%">Message sent ${fmt(i.sent)}. You can send it again.</p>`:""}
  ${i.done?`<button class="btn alt full" id="undo">Move back to pending</button>`:`<button class="btn full" id="done" style="background:var(--s-ready);color:#fff">Mark as completed</button>`}
@@ -160,7 +162,7 @@ document.addEventListener("click",e=>{
  if(t.dataset.t){i.time=+t.dataset.t;i.ready=false;other=false;save();detail();return}
  if(t.hasAttribute("data-ready")){i.ready=true;i.time=null;other=false;save();detail();return}
  if(t.hasAttribute("data-other")){other=!other;detail();return}
- if(t.id==="share"){if(!(i.ready||i.time)){return}const custom=$("custom-msg").value.trim();const finalMsg=custom||msg(i);t.href=`https://wa.me/91${esc(i.phone)}?text=${encodeURIComponent(finalMsg)}`;i.sent=Date.now();save();all();setTimeout(detail,300);return}
+ if(t.id==="share"){if(!(i.ready||i.time)){return}const custom=$("custom-msg").value.trim();i.customMessage=custom||msg(i);const finalMsg=i.customMessage;t.href=`https://wa.me/91${esc(i.phone)}?text=${encodeURIComponent(finalMsg)}`;i.sent=Date.now();save();all();setTimeout(detail,300);return}
  if(t.id==="done"){i.done=Date.now();save();all();close();toast("Marked as completed");return}
  if(t.id==="undo"){i.done=null;save();all();detail();toast("Moved back to pending");return}
  if(t.id==="del"){if(confirm("Delete "+i.name+" permanently? Completed customers are kept, so use this only for mistakes.")){D.items=D.items.filter(x=>x.id!==i.id);save();all();close()}return}
@@ -170,6 +172,7 @@ document.addEventListener("change",e=>{
   let t=d.getTime();if(t<=Date.now())t+=864e5;i.time=t;i.ready=false;other=false;save();detail()}
 });
 $("q").addEventListener("input",list);
+document.addEventListener("input",e=>{if(e.target.id==="custom-msg"&&sel){const i=get(sel);if(i){i.customMessage=e.target.value;save();}}});
 $("add").onclick=()=>open("ov-add");
 $("save").onclick=()=>{
  const name=$("f-name").value.trim(),phone=$("f-phone").value.replace(/\D/g,"").slice(-10),qty=$("f-qty").value.trim();
