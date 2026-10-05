@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PhotoDesk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6f5;--card:#fff;--ink:#0f2a26;--mute:#5c726d;--line:#d9e3e0;--brand:#0b6b5c;--brandink:#fff;--wa:#1a9b52;
+--s-new:#2f6fdb;--s-work:#d99a00;--s-ready:#1a9b52;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1917;--card:#142623;--ink:#e6f2ef;--mute:#9bb3ad;--line:#27403b;--brand:#3fc5ac;--brandink:#06201b;--wa:#2fbf71}}
+:root[data-theme="dark"]{--bg:#0c1917;--card:#142623;--ink:#e6f2ef;--mute:#9bb3ad;--line:#27403b;--brand:#3fc5ac;--brandink:#06201b;--wa:#2fbf71}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Hind,system-ui,sans-serif}
+h1,h2,.brand{font-family:'Bricolage Grotesque',Hind,sans-serif;margin:0}
+button,input,textarea{font:inherit;color:inherit}
+button,a{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card)}
+.brand{font-size:24px;font-weight:800;letter-spacing:-.5px}.brand i{font-style:normal;color:var(--brand)}
+main{max-width:640px;margin:0 auto;padding:14px 12px 90px}
+.note{font-size:13.5px;color:var(--mute);margin:0 0 12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;transition:transform .08s}
+.stat[aria-pressed=true]{border-color:var(--brand)}
+.stat b{display:block;font:800 28px/1.1 'Bricolage Grotesque',sans-serif}
+.stat span{font-size:13.5px;color:var(--mute)}
+.bar{margin-bottom:10px}
+.bar input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.btn{background:var(--brand);color:var(--brandink);border:0;border-radius:12px;padding:12px 16px;min-height:46px;font-weight:600;text-align:center;text-decoration:none;display:inline-block;transition:transform .08s}
+.btn.alt{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn.wa{background:var(--wa);color:#fff;font-size:18px;padding:15px}
+.btn.off{opacity:.45;pointer-events:none}
+.btn:active,.stat:active,.chip:active{transform:scale(.97)}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:17px;padding:14px 20px;border-radius:999px;z-index:3}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;min-height:44px}
+.row:active{background:var(--bg)}
+.row .n{font-weight:600;font-size:18px}.row small{color:var(--mute);font-size:14.5px}
+.row .p{grid-row:1/3;grid-column:2;align-self:center;text-align:right}
+.pill{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--c)}
+.empty{padding:28px;text-align:center;color:var(--mute)}
+.overlay{position:fixed;inset:0;background:rgba(5,20,17,.55);display:none;align-items:flex-end;justify-content:center;z-index:5}
+.overlay.open{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+.sheet:before{content:"";display:block;width:42px;height:5px;border-radius:3px;background:var(--line);margin:-10px auto 14px}
+@media(min-width:700px){.overlay{align-items:center}.sheet{border-radius:18px}}
+.sheet h2{font-size:28px;line-height:1.15}
+.sheet input,.sheet textarea{width:100%;padding:12px;min-height:46px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:2px solid var(--line);background:none;border-radius:999px;padding:10px 16px;min-height:46px;font-weight:600;font-size:16px;transition:transform .08s}
+.chip[aria-pressed=true]{border-color:var(--brand);background:var(--brand);color:var(--brandink)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.actions .btn{flex:1 1 calc(50% - 8px)}.actions .full{flex-basis:100%}
+.sec{font-weight:700;margin-top:16px}
+.hint{font-size:13.5px;color:var(--mute);margin:4px 0 0}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;max-width:90%;text-align:center}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Photo<i>Desk</i></div>
+  <button class="btn alt" id="settings" style="min-height:40px;padding:8px 14px">Settings</button>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <div class="bar"><input id="q" type="search" placeholder="Search name or mobile number" aria-label="Search customers"></div>
+  <div class="list" id="list"></div>
+</main>
+<button class="btn fab" id="add">+ Add customer</button>
+
+<div class="overlay" id="ov-detail"><div class="sheet" id="detail"></div></div>
+<div class="overlay" id="ov-add"><div class="sheet">
+  <h2>Add customer</h2>
+  <label for="f-name">Customer name</label><input id="f-name" autocomplete="off">
+  <label for="f-phone">Mobile number</label><input id="f-phone" inputmode="numeric" maxlength="10" placeholder="10 digits">
+  <div class="actions"><button class="btn full" id="save">Save and choose time</button><button class="btn alt full" data-close>Cancel</button></div>
+</div></div>
+<div class="overlay" id="ov-set"><div class="sheet">
+  <h2>Settings</h2>
+  <label for="s-shop">Shop name (used in the message)</label><input id="s-shop">
+  <label for="s-tpl">Default WhatsApp message</label><textarea id="s-tpl" rows="5"></textarea>
+  <p class="hint">Use {name}, {time} and {shop}. They fill in automatically. You can also edit the message before sending.</p>
+  <div class="actions"><button class="btn full" id="s-save">Save</button><button class="btn alt" id="s-reset">Reset message</button><button class="btn alt" data-close>Cancel</button></div>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const KEY="photodesk-v1",TPL="Hello {name},\n\nYour {qty} photos will be ready by {time}. Please collect them from {shop}.\n\nThank you!";
+let D={shop:"My Photo Centre",tpl:TPL,items:[]};
+try{const s=localStorage.getItem(KEY);if(s){const o=JSON.parse(s);if(o&&Array.isArray(o.items))D=Object.assign(D,o)}}catch(_){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(_){}};
+let tab="pending",sel=null,other=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const get=id=>D.items.find(i=>i.id===id);
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2000)}
+const HALF=1800000;
+function fmt(t){
+ const d=new Date(t),n=new Date(),tm=d.toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).replace(/\s/g," ");
+ const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);
+ return dd===0?tm:dd===1?"Tomorrow "+tm:d.toLocaleDateString("en-IN",{day:"numeric",month:"short"})+" "+tm;
+}
+function slots(){
+ const now=Date.now(),out=[Math.ceil((now+1)/HALF)*HALF];
+ [1,2,4].forEach(h=>{const t=Math.floor((now+h*3600000)/HALF)*HALF;if(t>out[out.length-1])out.push(t)});
+ return out;
+}
+function msg(i){
+ if(i.ready)return `Hello ${i.name},\n\nYour ${i.qty} photos are ready. Please collect them from ${D.shop}.\n\nThank you!`;
+ return D.tpl.replace(/\{name\}/g,i.name).replace(/\{qty\}/g,i.qty).replace(/\{time\}/g,fmt(i.time)).replace(/\{shop\}/g,D.shop);
+}
+function status(i){
+ if(i.done)return {l:"Completed",c:"var(--s-ready)"};
+ if(i.sent)return {l:i.ready?"Ready · message sent":"Ready by "+fmt(i.time)+" · sent",c:"var(--s-work)"};
+ return {l:"Not messaged yet",c:"var(--s-new)"};
+}
+function stats(){
+ const p=D.items.filter(i=>!i.done).length,c=D.items.length-p;
+ $("stats").innerHTML=[["pending","Pending",p],["done","Completed",c],["all","All",D.items.length]].map(([k,l,n])=>`<button class="stat" data-tab="${k}" aria-pressed="${tab===k}"><b>${n}</b><span>${l}</span></button>`).join("");
+}
+function list(){
+ const q=$("q").value.trim().toLowerCase();
+ let r=D.items.filter(i=>(tab==="all"||(tab==="done")===!!i.done)&&(i.name.toLowerCase().includes(q)||i.phone.includes(q)));
+ r.sort((a,b)=>(tab==="done"?b.done-a.done:b.created-a.created));
+ $("list").innerHTML=r.length?r.map(i=>{const s=status(i);return `<button class="row" data-id="${i.id}"><span class="n">${esc(i.name)}</span><small>${esc(i.phone)}</small><span class="p"><span class="pill" style="--c:${s.c}"><span class="dot"></span>${s.l}</span></span></button>`}).join(""):`<div class="empty">${D.items.length?"No customers here.":"No customers yet. Tap “+ Add customer” to start."}</div>`;
+}
+function detail(){
+ const i=get(sel);if(!i)return;
+ const sl=slots(),extra=i.time&&!i.ready&&!sl.includes(i.time)?[i.time]:[];
+ const chips=[...extra,...sl].map(t=>`<button class="chip" data-t="${t}" aria-pressed="${!i.ready&&i.time===t}">${fmt(t)}</button>`).join("")+
+  `<button class="chip" data-ready aria-pressed="${!!i.ready}">Ready now</button><button class="chip" data-other aria-pressed="${other}">Other time</button>`;
+ const ok=i.ready||i.time;
+ $("detail").innerHTML=`<h2>${esc(i.name)}</h2><div class="note">${esc(i.phone)}</div>
+ ${i.done?`<p class="sec">Completed ${fmt(i.done)}</p>`:`<div class="sec">When will the photos be ready?</div><div class="chips">${chips}</div>
+ ${other?`<label for="ot">Pick a time</label><input id="ot" type="time"><p class="hint">If the time has already passed today, it is set for tomorrow.</p>`:""}`}
+ <div class="actions">
+ <a class="btn wa full ${ok?"":"off"}" id="share" target="_blank" rel="noopener" ${ok?`href="https://wa.me/91${esc(i.phone)}?text=${encodeURIComponent(msg(i))}"`:""}>Share on WhatsApp</a>
+ ${!ok?`<p class="hint full" style="flex-basis:100%">Choose a time first, then share.</p>`:""}
+ ${i.sent?`<p class="hint full" style="flex-basis:100%">Message sent ${fmt(i.sent)}. You can send it again.</p>`:""}
+ ${i.done?`<button class="btn alt full" id="undo">Move back to pending</button>`:`<button class="btn full" id="done" style="background:var(--s-ready);color:#fff">Mark as completed</button>`}
+ <button class="btn alt" id="del">Delete</button><button class="btn alt" data-close>Close</button></div>`;
+}
+function close(){document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("open"))}
+function open(id){$(id).classList.add("open")}
+function all(){stats();list()}
+
+document.addEventListener("click",e=>{
+ const t=e.target.closest("button,a,.overlay");if(!t)return;
+ if(t.dataset.tab){tab=t.dataset.tab;all();return}
+ if(t.classList.contains("row")){sel=+t.dataset.id;other=false;detail();open("ov-detail");return}
+ if(t.hasAttribute("data-close")||(t.classList.contains("overlay")&&e.target===t)){close();return}
+ const i=sel&&get(sel);
+ if(t.dataset.t){i.time=+t.dataset.t;i.ready=false;other=false;save();detail();return}
+ if(t.hasAttribute("data-ready")){i.ready=true;i.time=null;other=false;save();detail();return}
+ if(t.hasAttribute("data-other")){other=!other;detail();return}
+ if(t.id==="share"){if(!(i.ready||i.time)){return}const custom=$("custom-msg").value.trim();const finalMsg=custom||msg(i);t.href=`https://wa.me/91${esc(i.phone)}?text=${encodeURIComponent(finalMsg)}`;i.sent=Date.now();save();all();setTimeout(detail,300);return}
+ if(t.id==="done"){i.done=Date.now();save();all();close();toast("Marked as completed");return}
+ if(t.id==="undo"){i.done=null;save();all();detail();toast("Moved back to pending");return}
+ if(t.id==="del"){if(confirm("Delete "+i.name+" permanently? Completed customers are kept, so use this only for mistakes.")){D.items=D.items.filter(x=>x.id!==i.id);save();all();close()}return}
+});
+document.addEventListener("change",e=>{
+ if(e.target.id==="ot"&&e.target.value){const i=get(sel),[h,m]=e.target.value.split(":").map(Number),d=new Date();d.setHours(h,m,0,0);
+  let t=d.getTime();if(t<=Date.now())t+=864e5;i.time=t;i.ready=false;other=false;save();detail()}
+});
+$("q").addEventListener("input",list);
+$("add").onclick=()=>open("ov-add");
+$("save").onclick=()=>{
+ const name=$("f-name").value.trim(),phone=$("f-phone").value.replace(/\D/g,"").slice(-10),qty=$("f-qty").value.trim();
+ if(!name){toast("Enter the customer name");return}
+ if(phone.length!==10){toast("Mobile number must be 10 digits");return}
+ if(!qty||+qty<1){toast("Enter the number of photos");return}
+ const i={id:Date.now(),name,phone,qty:0,created:Date.now(),time:null,ready:false,sent:null,done:null};
+ D.items.push(i);save();["f-name","f-phone"].forEach(x=>$(x).value="");
+ tab="pending";sel=i.id;other=false;all();close();detail();open("ov-detail");
+};
+$("settings").onclick=()=>{$("s-shop").value=D.shop;$("s-tpl").value=D.tpl;open("ov-set")};
+$("s-reset").onclick=()=>{$("s-tpl").value=TPL};
+$("s-save").onclick=()=>{D.shop=$("s-shop").value.trim()||"My Photo Centre";D.tpl=$("s-tpl").value.trim()||TPL;save();close();toast("Saved")};
+setInterval(()=>{if($("ov-detail").classList.contains("open")&&!other&&sel)detail()},60000);
+all();
+</script>
+</body>
+</html>
